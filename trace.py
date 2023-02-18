@@ -26,21 +26,21 @@ def output_images(w, h, trace, index, group):
             next_pos = t_pos
 
     if group == 1:
-        img.save("files/images/trace" + str(index) + ".png")
+        img.save("traces/images/trace" + str(index) + ".png")
     elif group == 2:
-        img.save("files/images/trace" + str(index) + "-xy.png")
+        img.save("traces/images/trace" + str(index) + "-xy.png")
     elif group == 3:
-        img.save("files/images/trace" + str(index) + "x-y.png")
+        img.save("traces/images/trace" + str(index) + "x-y.png")
     elif group == 4:
-        img.save("files/images/trace" + str(index) + "-x-y.png")
+        img.save("traces/images/trace" + str(index) + "-x-y.png")
     elif group == 5:
-        img.save("files/images/trace" + str(index) + "yx.png")
+        img.save("traces/images/trace" + str(index) + "yx.png")
     elif group == 6:
-        img.save("files/images/trace" + str(index) + "-yx.png")
+        img.save("traces/images/trace" + str(index) + "-yx.png")
     elif group == 7:
-        img.save("files/images/trace" + str(index) + "y-x.png")
+        img.save("traces/images/trace" + str(index) + "y-x.png")
     elif group == 8:
-        img.save("files/images/trace" + str(index) + "-y-x.png")
+        img.save("traces/images/trace" + str(index) + "-y-x.png")
 
 
 def generate_images():
@@ -59,31 +59,31 @@ def group_traces():
     for i in range(1, num_traces + 1):
         trace = open_trace(i, group)
 
-        t1 = open("files/text/trace" + str(i) + "-xy.txt", "w")
+        t1 = open("traces/text/trace" + str(i) + "-xy.txt", "w")
         for line in trace:
             t1.write(line.__getitem__(0) + ", " + str(200 - float(line.__getitem__(1))) + ", " + str(float(line.__getitem__(2))) + "\n")
 
-        t2 = open("files/text/trace" + str(i) + "x-y.txt", "w")
+        t2 = open("traces/text/trace" + str(i) + "x-y.txt", "w")
         for line in trace:
             t2.write(line.__getitem__(0) + ", " + str(float(line.__getitem__(1))) + ", " + str(200 - float(line.__getitem__(2))) + "\n")
 
-        t3 = open("files/text/trace" + str(i) + "-x-y.txt", "w")
+        t3 = open("traces/text/trace" + str(i) + "-x-y.txt", "w")
         for line in trace:
             t3.write(line.__getitem__(0) + ", " + str(200 - float(line.__getitem__(1))) + ", " + str(200 - float(line.__getitem__(2))) + "\n")
 
-        t4 = open("files/text/trace" + str(i) + "yx.txt", "w")
+        t4 = open("traces/text/trace" + str(i) + "yx.txt", "w")
         for line in trace:
             t4.write(line.__getitem__(0) + ", " + str(float(line.__getitem__(2))) + ", " + str(float(line.__getitem__(1))) + "\n")
 
-        t5 = open("files/text/trace" + str(i) + "-yx.txt", "w")
+        t5 = open("traces/text/trace" + str(i) + "-yx.txt", "w")
         for line in trace:
             t5.write(line.__getitem__(0) + ", " + str(200 - float(line.__getitem__(2))) + ", " + str(float(line.__getitem__(1))) + "\n")
 
-        t6 = open("files/text/trace" + str(i) + "y-x.txt", "w")
+        t6 = open("traces/text/trace" + str(i) + "y-x.txt", "w")
         for line in trace:
             t6.write(line.__getitem__(0) + ", " + str(float(line.__getitem__(2))) + ", " + str(200 - float(line.__getitem__(1))) + "\n")
 
-        t7 = open("files/text/trace" + str(i) + "-y-x.txt", "w")
+        t7 = open("traces/text/trace" + str(i) + "-y-x.txt", "w")
         for line in trace:
             t7.write(line.__getitem__(0) + ", " + str(200 - float(line.__getitem__(2))) + ", " + str(200 - float(line.__getitem__(1))) + "\n")
 
@@ -92,28 +92,28 @@ def open_trace(i, group):
     trace = []
 
     if group == 1:
-        with open("files/text/trace" + str(i) + ".txt") as f:
+        with open("traces/text/trace" + str(i) + ".txt") as f:
             lines = [line.rstrip() for line in f]
     elif group == 2:
-        with open("files/text/trace" + str(i) + "-xy.txt") as f:
+        with open("traces/text/trace" + str(i) + "-xy.txt") as f:
             lines = [line.rstrip() for line in f]
     elif group == 3:
-        with open("files/text/trace" + str(i) + "x-y.txt") as f:
+        with open("traces/text/trace" + str(i) + "x-y.txt") as f:
             lines = [line.rstrip() for line in f]
     elif group == 4:
-        with open("files/text/trace" + str(i) + "-x-y.txt") as f:
+        with open("traces/text/trace" + str(i) + "-x-y.txt") as f:
             lines = [line.rstrip() for line in f]
     elif group == 5:
-        with open("files/text/trace" + str(i) + "yx.txt") as f:
+        with open("traces/text/trace" + str(i) + "yx.txt") as f:
             lines = [line.rstrip() for line in f]
     elif group == 6:
-        with open("files/text/trace" + str(i) + "-yx.txt") as f:
+        with open("traces/text/trace" + str(i) + "-yx.txt") as f:
             lines = [line.rstrip() for line in f]
     elif group == 7:
-        with open("files/text/trace" + str(i) + "y-x.txt") as f:
+        with open("traces/text/trace" + str(i) + "y-x.txt") as f:
             lines = [line.rstrip() for line in f]
     elif group == 8:
-        with open("files/text/trace" + str(i) + "-y-x.txt") as f:
+        with open("traces/text/trace" + str(i) + "-y-x.txt") as f:
             lines = [line.rstrip() for line in f]
 
     for line in lines:
