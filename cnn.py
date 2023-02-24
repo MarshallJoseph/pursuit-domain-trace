@@ -3,8 +3,8 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropout
-from keras.metrics import Precision, Recall, BinaryAccuracy
+from keras.layers import Conv2D, MaxPooling2D, Dense, Flatten, Dropout, BatchNormalization
+from keras.metrics import Precision, Recall, BinaryAccuracy, Accuracy
 
 # Avoid OOM errors by setting GPU memory consumption growth
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -37,24 +37,28 @@ test = data.skip(train_size+val_size).take(test_size)
 
 model = Sequential()
 
-model.add(Conv2D(16, (3, 3), 1, activation='relu', input_shape=(200, 200, 1)))
-model.add(MaxPooling2D())
-model.add(Conv2D(32, (3, 3), 1, activation='relu'))
-model.add(MaxPooling2D())
-model.add(Conv2D(16, (3, 3), 1, activation='relu'))
-model.add(MaxPooling2D())
+model.add(Conv2D(filters=32, kernel_size=(3, 3), activation='relu', input_shape=(200, 200, 1)))
+model.add(MaxPooling2D(2, 2))
+model.add(Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
+model.add(MaxPooling2D(2, 2))
+model.add(Dropout(rate=0.5))
 model.add(Flatten())
 model.add(Dense(256, activation='relu'))
-model.add(Dense(1, activation='sigmoid'))
+model.add(Dropout(rate=0.5))
+model.add(BatchNormalization())
+model.add(Dense(128, activation='relu'))
+model.add(Dropout(rate=0.5))
+model.add(BatchNormalization())
+model.add(Dense(3, activation='softmax'))
 
-model.compile('adam', loss=tf.losses.BinaryCrossentropy(), metrics=['accuracy'])
+model.compile('adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 model.summary()
 
 # Train model
 logdir = 'logs'
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
-hist = model.fit(train, epochs=20, validation_data=val, callbacks=[tensorboard_callback])
+hist = model.fit(train, epochs=10, validation_data=val, callbacks=[tensorboard_callback])
 
 # Plot loss
 fig = plt.figure()
@@ -71,18 +75,4 @@ plt.plot(hist.history['val_accuracy'], color='orange', label='val_accuracy')
 fig.suptitle('Accuracy', fontsize=20)
 plt.legend(loc="upper left")
 plt.show()
-
-# Evaluate
-pre = Precision()
-re = Recall()
-acc = BinaryAccuracy()
-
-for batch in test.as_numpy_iterator():
-    X, y = batch
-    yhat = model.predict(X)
-    pre.update_state(y, yhat)
-    re.update_state(y, yhat)
-    acc.update_state(y, yhat)
-
-print(pre.result(), re.result(), acc.result())
 
