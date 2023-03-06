@@ -79,7 +79,7 @@ model.compile(optimizer='adam',
 model.summary()
 
 # Train the model
-epochs = 1
+epochs = 5
 history = model.fit(
     train_ds,
     validation_data=val_ds,
