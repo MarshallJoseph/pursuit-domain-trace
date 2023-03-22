@@ -2,13 +2,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import PIL
 import tensorflow as tf
+import os
 
 from keras import layers
 from keras import metrics
 from keras.models import Sequential
 
+# We only care about high priority log errors
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 # Parameters
-batch_size = 64
+batch_size = 32
 img_height = 200
 img_width = 200
 
@@ -16,7 +20,7 @@ img_width = 200
 train_ds = tf.keras.utils.image_dataset_from_directory('data',
                                                        validation_split=0.2,
                                                        subset="training",
-                                                       seed=1,
+                                                       seed=3,
                                                        color_mode="grayscale",
                                                        image_size=(img_height, img_width),
                                                        batch_size=batch_size)
@@ -24,23 +28,13 @@ train_ds = tf.keras.utils.image_dataset_from_directory('data',
 val_ds = tf.keras.utils.image_dataset_from_directory('data',
                                                      validation_split=0.2,
                                                      subset="validation",
-                                                     seed=1,
+                                                     seed=3,
                                                      color_mode="grayscale",
                                                      image_size=(img_height, img_width),
                                                      batch_size=batch_size)
 
 class_names = train_ds.class_names
 print("Classes = " + str(class_names))
-
-# plt.figure(figsize=(10, 10))
-# for images, labels in train_ds.take(1):
-#     for i in range(9):
-#         ax = plt.subplot(3, 3, i + 1)
-#         plt.imshow(images[i].numpy().astype("uint8"))
-#         plt.title(class_names[labels[i]])
-#         plt.axis("off")
-
-# plt.show()
 
 for image_batch, labels_batch in train_ds:
     print("Image Batch Shape = " + str(image_batch.shape))
@@ -57,70 +51,101 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 # Set up model
 num_classes = len(class_names)
 
-model = Sequential([
-    layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 1)),
-    layers.Conv2D(16, 3, padding='same', activation='relu'),
-    layers.MaxPooling2D(),
-    layers.Conv2D(32, 3, padding='same', activation='relu'),
-    layers.MaxPooling2D(),
-    layers.Conv2D(64, 3, padding='same', activation='relu'),
-    layers.MaxPooling2D(),
-    layers.Flatten(),
-    layers.Dense(128, activation='relu'),
-    layers.Dense(num_classes)
-])
+# Create checkpoint path
+checkpoint_path = "cnn/checkpoints/cnn-{epoch:02d}.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
 
-# Compile the model
-model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-              metrics=['accuracy'])
+# Create a tf.keras.callbacks.ModelCheckpoint callback that saves weights only during training
+cp_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath=checkpoint_path,
+    verbose=1,
+    save_weights_only=True,
+    save_freq='epoch'
+)
+
+
+def create_model():
+    cnn = Sequential([
+        layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 1)),
+        layers.Conv2D(filters=128, kernel_size=(3, 3), activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Dropout(rate=0.25),
+        layers.Flatten(),
+        layers.Dense(256, activation='relu'),
+        layers.Dropout(rate=0.5),
+        layers.BatchNormalization(),
+        layers.Dense(128, activation='relu'),
+        layers.Dropout(rate=0.5),
+        layers.BatchNormalization(),
+        layers.Dense(num_classes, name="outputs", activation='relu')
+    ])
+
+    # Compile the model
+    cnn.compile(optimizer='adam',
+                loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                metrics=['accuracy'])
+
+    return cnn
+
+
+# Create an instance of the cnn model
+model = create_model()
 
 # View all the layers of the network using Keras Model.summary method
 model.summary()
 
+# Save the weights using the 'checkpoint_path' format
+model.save_weights(checkpoint_path.format(epoch=0))
+
 # Train the model
-epochs = 5
+epochs = 10
 history = model.fit(
     train_ds,
     validation_data=val_ds,
-    epochs=epochs
+    epochs=epochs,
+    callbacks=[cp_callback]
 )
 
 # Test the model
-for i in range(10):
+for i in range(50):
     img = tf.keras.utils.load_img(
-        "unique/unique/test_trace_" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+        "unique/unique/test" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
     )
     img_array = tf.keras.utils.img_to_array(img)
     img_array = tf.expand_dims(img_array, 0)  # Create a batch
 
     predictions = model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
+    print("Length of score vector = " + str(len(score)))
 
-    print("Image = test_trace_" + str(i) + ".png")
-    print(
-        "This image most likely belongs to {} with a {:.2f} percent confidence."
-        .format(class_names[np.argmax(score)], 100 * np.max(score))
-    )
+    print("Image = test" + str(i) + ".png")
+    print("Predictions:")
+    for j in range(len(score)):
+        print(
+            "\t Class = {} -> Confidence = {:.2f}"
+            .format(class_names[j], 100 * score[j])
+        )
 
-# acc = history.history['accuracy']
-# val_acc = history.history['val_accuracy']
-#
-# loss = history.history['loss']
-# val_loss = history.history['val_loss']
-#
-# epochs_range = range(epochs)
-#
-# plt.figure(figsize=(8, 8))
-# plt.subplot(1, 2, 1)
-# plt.plot(epochs_range, acc, label='Training Accuracy')
-# plt.plot(epochs_range, val_acc, label='Validation Accuracy')
-# plt.legend(loc='lower right')
-# plt.title('Training and Validation Accuracy')
-#
-# plt.subplot(1, 2, 2)
-# plt.plot(epochs_range, loss, label='Training Loss')
-# plt.plot(epochs_range, val_loss, label='Validation Loss')
-# plt.legend(loc='upper right')
-# plt.title('Training and Validation Loss')
-# plt.show()
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs_range = range(epochs)
+
+plt.figure(figsize=(8, 8))
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.show()
