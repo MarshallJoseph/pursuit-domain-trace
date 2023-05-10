@@ -1,6 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
-import PIL
 import tensorflow as tf
 import os
 
@@ -67,9 +65,11 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
 def create_model():
     cnn = Sequential([
         layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 1)),
-        layers.Conv2D(filters=128, kernel_size=(3, 3), activation='relu'),
-        layers.MaxPooling2D(pool_size=(2, 2)),
         layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(filters=128, kernel_size=(3, 3), activation='relu'),
         layers.MaxPooling2D(pool_size=(2, 2)),
         layers.Dropout(rate=0.25),
         layers.Flatten(),
@@ -100,7 +100,7 @@ model.summary()
 model.save_weights(checkpoint_path.format(epoch=0))
 
 # Train the model
-epochs = 10
+epochs = 20
 history = model.fit(
     train_ds,
     validation_data=val_ds,

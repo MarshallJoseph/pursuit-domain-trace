@@ -24,9 +24,11 @@ num_classes = len(class_names)
 def create_model():
     cnn = Sequential([
         layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 1)),
-        layers.Conv2D(filters=128, kernel_size=(3, 3), activation='relu'),
-        layers.MaxPooling2D(pool_size=(2, 2)),
         layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(filters=128, kernel_size=(3, 3), activation='relu'),
         layers.MaxPooling2D(pool_size=(2, 2)),
         layers.Dropout(rate=0.25),
         layers.Flatten(),
@@ -48,7 +50,7 @@ def create_model():
 
 
 # Load checkpoint from model to pull in weights
-checkpoint_dir = 'cnn/checkpoints/cnn-02.ckpt'
+checkpoint_dir = 'cnn/model/cnn-14.ckpt'
 
 # Create a new model instance
 model = create_model()
@@ -59,22 +61,33 @@ model.load_weights(checkpoint_dir).expect_partial()
 # Print a summary
 model.summary()
 
-# Test the model
-for i in range(50):
-    img = tf.keras.utils.load_img(
-        "unique/unique/test" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
-    )
-    img_array = tf.keras.utils.img_to_array(img)
-    img_array = tf.expand_dims(img_array, 0)  # Create a batch
 
-    predictions = model.predict(img_array)
-    score = tf.nn.softmax(predictions[0])
-    print("Length of score vector = " + str(len(score)))
-
-    print("Image = test" + str(i) + ".png")
-    print("Predictions:")
-    for j in range(len(score)):
-        print(
-            "\t Class = {} -> Confidence = {:.2f}"
-            .format(class_names[j], 100 * score[j])
+def classify_uniques():
+    # Test the model on entire folder
+    for i in range(1, 51):  # Change to (50) if index starts at 0
+        img = tf.keras.utils.load_img(
+            # "unique/unique/test" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            "unique/test-data/arched-line-ricochet/arched-line-ricochet" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            # "unique/test-data/straight-line-ricochet/straight-line-ricochet" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            # "unique/test-data/classic-pursuit/classic-pursuit" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            # "unique/test-data/small-circle-pursuit/small-circle-pursuit" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            # "unique/test-data/medium-circle-pursuit/medium-circle-pursuit" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            # "unique/test-data/large-circle-pursuit/large-circle-pursuit" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
         )
+        img_array = tf.keras.utils.img_to_array(img)
+        img_array = tf.expand_dims(img_array, 0)  # Create a batch
+
+        predictions = model.predict(img_array)
+        score = tf.nn.softmax(predictions[0])
+        print("Length of score vector = " + str(len(score)))
+
+        print("Image = test" + str(i) + ".png")
+        print("Predictions:")
+        for j in range(len(score)):
+            print(
+                "\t Class = {} -> Confidence = {:.2f}"
+                .format(class_names[j], 100 * score[j])
+            )
+
+
+classify_uniques()
