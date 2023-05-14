@@ -64,15 +64,24 @@ model.summary()
 
 def classify_uniques():
     # Test the model on entire folder
-    for i in range(1, 51):  # Change to (50) if index starts at 0
+    for i in range(1, 9):  # Change to (50) if index starts at 0
         img = tf.keras.utils.load_img(
+            # * Test Data *
             # "unique/unique/test" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
-            "unique/test-data/arched-line-ricochet/arched-line-ricochet" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            # "unique/test-data/arched-line-ricochet/arched-line-ricochet" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
             # "unique/test-data/straight-line-ricochet/straight-line-ricochet" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
             # "unique/test-data/classic-pursuit/classic-pursuit" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
             # "unique/test-data/small-circle-pursuit/small-circle-pursuit" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
             # "unique/test-data/medium-circle-pursuit/medium-circle-pursuit" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
             # "unique/test-data/large-circle-pursuit/large-circle-pursuit" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+
+            # * Rotate Data *
+            # "unique/rotate-data/arched-line-ricochet/arched-line-ricochet-rotate" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            # "unique/rotate-data/straight-line-ricochet/straight-line-ricochet-rotate" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            # "unique/rotate-data/classic-pursuit/classic-pursuit-rotate" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            # "unique/rotate-data/small-circle-pursuit/small-circle-pursuit-rotate" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            # "unique/rotate-data/medium-circle-pursuit/medium-circle-pursuit-rotate" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
+            # "unique/rotate-data/large-circle-pursuit/large-circle-pursuit-rotate" + str(i) + ".png", color_mode="grayscale", target_size=(img_height, img_width)
         )
         img_array = tf.keras.utils.img_to_array(img)
         img_array = tf.expand_dims(img_array, 0)  # Create a batch
@@ -84,10 +93,11 @@ def classify_uniques():
         print("Image = test" + str(i) + ".png")
         print("Predictions:")
         for j in range(len(score)):
-            print(
-                "\t Class = {} -> Confidence = {:.2f}"
-                .format(class_names[j], 100 * score[j])
-            )
+            # print(
+            #     "\t Class = {} -> Confidence = {:.2f}"
+            #     .format(class_names[j], 100 * score[j])
+            # )
+            print("{:.2f}".format(100 * score[j]))
 
 
 classify_uniques()

@@ -3,7 +3,6 @@ import tensorflow as tf
 import os
 
 from keras import layers
-from keras import metrics
 from keras.models import Sequential
 
 # We only care about high priority log errors
